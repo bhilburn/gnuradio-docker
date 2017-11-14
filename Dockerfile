@@ -1,21 +1,51 @@
-FROM bistromath/uhd:3.10.2
+FROM phusion/baseimage:0.9.22
 
-ENV gr_ver 3.7.11
-ENV num_threads 10
-MAINTAINER bistromath@gmail.com version: 0.5
+ENV num_threads 1
+ENV uhd_branch maint
+ENV gr_branch maint
 
-#i could just do apt-get install gnuradio
-#but then it'd use the older UHD, and part of the
-#reason to do this is to get latest releases.
-#no offense to maitland.
-RUN apt-get install -y libboost-dev libfftw3-3 libfftw3-dev libcppunit-1.13-0v5 \
-    swig3.0 libgsl-dev libasound2-dev python-cheetah python-numpy python-lxml \
-    python-gtk2 python-cairo-dev python-qt4 libqwt5-qt4 libqwt-dev python-qwt5-qt4 \
-    liblog4cpp5-dev libzmq3-dev python-zmq
+RUN apt-get update && apt-get dist-upgrade -yf && apt-get clean && apt-get autoremove
+RUN apt-get install -y \
+        build-essential \
+        cmake \
+        git \
+        libasound2-dev \
+        liblog4cpp5-dev \
+        libboost-all-dev \
+        libfftw3-3 \
+        libfftw3-dev \
+        libgsl-dev \
+        libqwt-dev \
+        libqwt5-qt4 \
+        libusb-1.0-0 \
+        libusb-1.0-0-dev \
+        libzmq3-dev \
+        pkg-config \
+        python-cairo-dev \
+        python-cheetah \
+        python-dev \
+        python-gtk2 \
+        python-lxml \
+        python-mako \
+        python-numpy \
+        python-qt4 \
+        python-qwt5-qt4 \
+        python-zmq \
+        swig
 
-WORKDIR /opt
-RUN git clone https://github.com/gnuradio/gnuradio.git
+WORKDIR /opt/
+RUN git clone https://github.com/EttusResearch/uhd.git
+WORKDIR /opt/uhd/host
+RUN git checkout release_003_010_002_000
+
+RUN mkdir build \
+    && cd build \
+    && cmake ../ -DENABLE_B100=1 -DENABLE_B200=1 -DENABLE_E100=0 -DENABLE_E300=0 -DENABLE_EXAMPLES=1 -DENABLE_DOXYGEN=0 -DENABLE_MANUAL=0 -DENABLE_MAN_PAGES=0 -DENABLE_OCTOCLOCK=0 -DENABLE_ORC=0 -DENABLE_USRP1=0 -DENABLE_USRP2=1 -DENABLE_UTILS=1 -DENABLE_X300=1 \
+    && make -j${threads} \
+    && make install \
+    && ldconfig
+
 WORKDIR /opt/gnuradio
-RUN git checkout v${gr_ver}
-RUN git submodule init && git submodule update
+RUN git clone https://github.com/gnuradio/gnuradio.git
+RUN git checkout --recursive ${gr_branch}
 RUN mkdir build && cd build && cmake ../ && make -j${num_threads} && make install && ldconfig
