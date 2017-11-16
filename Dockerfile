@@ -1,6 +1,6 @@
 FROM phusion/baseimage:0.9.22
 
-ENV num_threads 4
+ENV num_threads 2
 ENV uhd_branch maint
 ENV gr_branch maint
 
