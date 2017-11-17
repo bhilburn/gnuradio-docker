@@ -55,3 +55,5 @@ RUN cmake ../
 RUN make -j${num_threads}
 RUN make install
 RUN ldconfig
+
+CMD ["/bin/bash"]
