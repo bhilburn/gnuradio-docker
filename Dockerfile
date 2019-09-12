@@ -4,7 +4,7 @@ ENV num_threads 2
 ENV uhd_branch maint
 ENV gr_branch maint
 
-RUN apt-get update && apt-get dist-upgrade -yf && apt-get clean && apt-get autoremove
+RUN apt-get update && apt-get dist-upgrade -yf --force-confnew & apt-get clean && apt-get autoremove
 RUN apt-get install -y \
         build-essential \
         cmake \
